@@ -34,7 +34,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "assessment4-local-demo"
+        "projectId": "local-demo"
       }
     }
   }

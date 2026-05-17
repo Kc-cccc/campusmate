@@ -1,6 +1,6 @@
 # CampusMate
 
-Initial mobile application.
+React Native + Expo + TypeScript shell mobile application.
 
 ## Run
 
