@@ -1,6 +1,6 @@
-# CampusMate
+# CampusMate — Assessment 4
 
-React Native + Expo + TypeScript shell mobile application.
+Initial React Native + Expo + TypeScript shell  mobile application.
 
 ## Run
 
