@@ -1,34 +1,28 @@
+import 'react-native-gesture-handler';
 import React from 'react';
-import { SafeAreaView, Text, StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
+import { AppProvider, useApp } from './src/context/AppContext';
+import { AppNavigator } from './src/navigation/AppNavigator';
+import { LoadingOverlay } from './src/components/LoadingOverlay';
+import './src/services/backgroundReminderTask';
 
-export default function App() {
+function AppShell() {
+  const { theme, isLoading, user } = useApp();
+  if (isLoading && !user) {
+    return <LoadingOverlay />;
+  }
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <Text style={styles.title}>CampusMate</Text>
-      <Text style={styles.subtitle}>Context-aware study assistant</Text>
-    </SafeAreaView>
+    <>
+      <StatusBar style={theme.mode === 'dark' ? 'light' : 'dark'} />
+      <AppNavigator />
+    </>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F4F8FB',
-    padding: 24
-  },
-  title: {
-    fontSize: 34,
-    lineHeight: 40,
-    fontWeight: '800',
-    color: '#102033'
-  },
-  subtitle: {
-    marginTop: 8,
-    fontSize: 16,
-    color: '#64748B'
-  }
-});
+export default function App() {
+  return (
+    <AppProvider>
+      <AppShell />
+    </AppProvider>
+  );
+}

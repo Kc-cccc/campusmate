@@ -7,3 +7,7 @@ export const subjects: Subject[] = [
   { id: 'chemistry', name: 'Chemistry', code: 'CHEM', color: '#8A5A9E' },
   { id: 'mobile', name: 'Mobile App Development', code: 'MAD', color: '#B45C4B' }
 ];
+
+export const getSubjectName = (subjectId: string): string => {
+  return subjects.find((subject) => subject.id === subjectId)?.name ?? 'Unknown Subject';
+};
