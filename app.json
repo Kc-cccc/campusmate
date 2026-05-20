@@ -34,7 +34,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "local-demo"
+        "projectId": "campusmate-local-demo"
       }
     }
   }

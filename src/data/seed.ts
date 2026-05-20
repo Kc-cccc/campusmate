@@ -94,7 +94,7 @@ export const seedTasks: Task[] = [
   {
     id: 'task-5',
     userId: demoUserId,
-    title: 'Assessment 4 Testing Evidence',
+    title: 'Testing Evidence Review',
     description: 'Capture Jest test results, device screenshots, and Firebase Test Lab notes.',
     subjectId: 'mobile',
     dueAt: buildISODate(now, 8, 21, 0),

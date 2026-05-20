@@ -65,7 +65,7 @@ export function WelcomeScreen(_props: Props) {
         </Card>
 
         <View style={{ marginTop: 22, padding: 16, borderRadius: 20, backgroundColor: theme.surfaceMuted }}>
-          <AppText variant="caption" style={{ color: theme.primaryDark }}>Assessment focus</AppText>
+          <AppText variant="caption" style={{ color: theme.primaryDark }}>Product focus</AppText>
           <AppText muted style={{ marginTop: 4 }}>Clear navigation, location-aware reminders, Firebase-ready data, accessibility settings, and testing evidence.</AppText>
         </View>
       </KeyboardAvoidingView>

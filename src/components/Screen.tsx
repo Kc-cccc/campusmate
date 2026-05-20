@@ -28,5 +28,5 @@ export function Screen({ children, scroll = true, style }: ScreenProps) {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
   scrollContent: { flexGrow: 1 },
-  content: { flex: 1, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 20 }
+  content: { flex: 1, paddingHorizontal: 20, paddingTop: 18, paddingBottom: 10 }
 });
