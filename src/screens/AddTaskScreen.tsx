@@ -45,7 +45,7 @@ export function AddTaskScreen({ navigation, route }: Props) {
     try {
       const now = new Date().toISOString();
       if (editTask) {
-        await updateTask({ ...editTask, title, description, subjectId, dueAt, priority, locationReminder: location, updatedAt: now });
+        await updateTask({ ...editTask, title, description, subjectId, dueAt, priority, locationReminder: location ?? null, updatedAt: now });
       } else {
         await addTask({
           id: createId('task'),
@@ -57,7 +57,7 @@ export function AddTaskScreen({ navigation, route }: Props) {
           priority,
           status: 'pending',
           reminderTime: new Date(new Date(dueAt).getTime() - 60 * 60 * 1000).toISOString(),
-          locationReminder: location,
+          locationReminder: location ?? null,
           createdAt: now,
           updatedAt: now
         });

@@ -37,7 +37,7 @@ export function TaskCard({ task, onPress, onToggle }: TaskCardProps) {
           <View style={{ flex: 1 }}>
             <AppText variant="bodyStrong" style={{ textDecorationLine: completed ? 'line-through' : 'none' }}>{task.title}</AppText>
             <AppText variant="caption" muted>{getSubjectName(task.subjectId)} · {formatDateTime(task.dueAt)}</AppText>
-            {task.locationReminder ? <AppText variant="caption" muted>📍 {task.locationReminder.placeName}</AppText> : null}
+            {task.locationReminder ? <AppText variant="caption" muted>{task.locationReminder.placeName}</AppText> : null}
           </View>
           <View style={{ alignItems: 'flex-end', gap: 8 }}>
             <Badge label={task.priority} tone={priorityTone(task.priority)} />
