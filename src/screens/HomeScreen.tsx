@@ -54,7 +54,7 @@ export function HomeScreen({ navigation }: Props) {
       </Card>
 
       <Card style={{ marginBottom: 18 }}>
-        <SectionHeader title="Device context" subtitle="Mobile capability use" />
+        <SectionHeader title="Device context" subtitle="Evidence of mobile capability use" />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
           <View style={{ flex: 1 }}>
             <AppText variant="caption" muted>Battery</AppText>
@@ -71,7 +71,7 @@ export function HomeScreen({ navigation }: Props) {
 
       <SectionHeader title="Today" subtitle="Quick actions for the next deadline" actionLabel="All tasks" onAction={() => navigation.navigate('MainTabs', { screen: 'Tasks' })} />
       {todaysTasks.length ? todaysTasks.map((task) => (
-        <TaskCard  key={task.id} task={task} onToggle={() => void toggleTask(task.id)} onPress={() => navigation.navigate('TaskDetail', { taskId: task.id })} />
+        <TaskCard key={task.id} task={task} onToggle={() => void toggleTask(task.id)} onPress={() => navigation.navigate('TaskDetail', { taskId: task.id })} />
       )) : <Card><AppText muted>No tasks due today. Use this time for a study session or plan ahead.</AppText></Card>}
 
       <SectionHeader title="Urgent deadlines" subtitle="Prioritised by due date" />
