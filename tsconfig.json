@@ -6,7 +6,9 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": false,
     "skipLibCheck": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "types": ["jest", "node"]
   },
+
   "include": ["App.tsx", "src/**/*.ts", "src/**/*.tsx"]
 }

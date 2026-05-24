@@ -21,7 +21,18 @@ const radii = [100, 300, 500, 1000];
 export function LocationReminderScreen({ navigation }: Props) {
   const { theme, selectedLocation, setSelectedLocation } = useApp();
   const [query, setQuery] = useState('');
-  const [candidate, setCandidate] = useState<ReminderLocation>(selectedLocation ?? campusPlaces[0]);
+  const defaultLocation: ReminderLocation = campusPlaces[0] ?? {
+    id: 'campus-library',
+    placeName: 'Campus Library',
+    address: 'Main campus library',
+    latitude: -37.7213,
+    longitude: 145.0489,
+    radiusMeters: 300
+  };
+
+  const [candidate, setCandidate] = useState<ReminderLocation>(
+    selectedLocation ?? defaultLocation
+  );
   const places = useMemo(() => searchCampusPlaces(query), [query]);
   const region: Region = {
     latitude: candidate.latitude,

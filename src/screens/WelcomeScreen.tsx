@@ -59,15 +59,10 @@ export function WelcomeScreen(_props: Props) {
             style={{ marginTop: 10 }}
           />
           <Button title="Continue as guest" variant="secondary" onPress={() => void loginAsGuest()} style={{ marginTop: 10 }} />
-          <AppText variant="caption" muted style={{ textAlign: 'center', marginTop: 12 }}>
-            Firebase is used when configured. Otherwise the app runs safely in local demo mode.
-          </AppText>
+     
         </Card>
 
-        <View style={{ marginTop: 22, padding: 16, borderRadius: 20, backgroundColor: theme.surfaceMuted }}>
-          <AppText variant="caption" style={{ color: theme.primaryDark }}>Product focus</AppText>
-          <AppText muted style={{ marginTop: 4 }}>Clear navigation, location-aware reminders, Firebase-ready data, accessibility settings, and testing evidence.</AppText>
-        </View>
+     
       </KeyboardAvoidingView>
     </Screen>
   );

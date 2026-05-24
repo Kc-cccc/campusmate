@@ -39,8 +39,26 @@ export const shadows = {
  * A cool porcelain, navy and copper system built to feel like a focused
  * university productivity tool, not a nature-themed app or generic AI template.
  */
-const lightPalette = {
-  mode: 'light' as const,
+type Palette = {
+  mode: ThemeMode;
+  background: string;
+  surface: string;
+  surfaceMuted: string;
+  border: string;
+  text: string;
+  textMuted: string;
+  primary: string;
+  primaryDark: string;
+  primarySoft: string;
+  success: string;
+  warning: string;
+  danger: string;
+  chip: string;
+  shadow: string;
+};
+
+const lightPalette: Palette = {
+  mode: 'light',
   background: '#F3F6F8',
   surface: '#FFFFFF',
   surfaceMuted: '#E8EEF3',
@@ -57,8 +75,8 @@ const lightPalette = {
   shadow: '#111827'
 };
 
-const darkPalette = {
-  mode: 'dark' as const,
+const darkPalette: Palette = {
+  mode: 'dark',
   background: '#0A0F1A',
   surface: '#111827',
   surfaceMuted: '#1A2435',
@@ -75,13 +93,12 @@ const darkPalette = {
   shadow: '#000000'
 };
 
-export type AppTheme = typeof lightPalette & {
+export type AppTheme = Palette & {
   spacing: typeof spacing;
   radius: typeof radius;
   shadows: typeof shadows;
   typography: ReturnType<typeof createTypography>;
 };
-
 export const textScaleValues: Record<TextScale, number> = {
   small: 0.94,
   medium: 1,

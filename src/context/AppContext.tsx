@@ -160,7 +160,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [persistTasks, preferences.notificationsEnabled, tasks]);
 
   const updateTask = useCallback(async (task: Task) => {
-    const next = tasks.map((item) => (item.id === task.id ? task : item));
+    const next: Task[] = tasks.map((item) => (item.id === task.id ? task : item));
     await persistTasks(next);
     if (preferences.notificationsEnabled) {
       await scheduleTaskReminder(task);
@@ -175,7 +175,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const toggleTask = useCallback(async (taskId: string) => {
     const now = new Date().toISOString();
-    const next = tasks.map((task) => task.id === taskId ? { ...task, status: task.status === 'completed' ? 'pending' : 'completed', updatedAt: now } : task);
+
+    const next: Task[] = tasks.map((task): Task => {
+      if (task.id !== taskId) {
+        return task;
+      }
+
+      const nextStatus: Task['status'] =
+        task.status === 'completed' ? 'pending' : 'completed';
+
+      return {
+        ...task,
+        status: nextStatus,
+        updatedAt: now
+      };
+    });
+
     await persistTasks(next);
   }, [persistTasks, tasks]);
 

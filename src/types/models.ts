@@ -29,7 +29,7 @@ export interface Task {
   priority: Priority;
   status: TaskStatus;
   reminderTime?: string;
-  locationReminder?: ReminderLocation;
+  locationReminder?: ReminderLocation | null;
   createdAt: string;
   updatedAt: string;
 }
