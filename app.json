@@ -8,10 +8,13 @@
     "userInterfaceStyle": "automatic",
     "scheme": "campusmate",
     "splash": {
-      "backgroundColor": "#EEF6FF",
+      "image": "./assets/splash.png",
+      "backgroundColor": "#F3F6F8",
       "resizeMode": "contain"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.cse3mad.campusmate",
@@ -22,20 +25,42 @@
     },
     "android": {
       "package": "com.cse3mad.campusmate",
-      "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION", "ACCESS_BACKGROUND_LOCATION", "POST_NOTIFICATIONS"],
+      "splash": {
+        "image": "./assets/splash.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#F3F6F8"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "POST_NOTIFICATIONS",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
       "adaptiveIcon": {
-        "backgroundColor": "#EEF6FF"
+        "backgroundColor": "#F3F6F8",
+        "foregroundImage": "./assets/adaptive-icon.png"
       }
     },
     "plugins": [
       "expo-location",
       "expo-notifications",
-      "expo-task-manager"
+      "expo-task-manager",
+      "expo-font",
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ]
     ],
     "extra": {
       "eas": {
-        "projectId": "campusmate-local-demo"
+        "projectId": "cb976a7d-0857-480a-846c-e7169123e934"
       }
-    }
+    },
+    "owner": "lorin520"
   }
 }

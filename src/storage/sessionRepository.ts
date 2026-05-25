@@ -4,6 +4,7 @@ import { seedStudySessions } from '../data/seed';
 import { getFirebaseServices } from '../services/firebase';
 import type { StudySession } from '../types/models';
 import { storageKeys } from './keys';
+import { loadJsonValue, loadSessionRows, replaceSessionRows, saveJsonValue } from './sqliteDatabase';
 
 export async function loadSessions(userId: string): Promise<StudySession[]> {
   const { db, isConfigured } = getFirebaseServices();
@@ -13,13 +14,23 @@ export async function loadSessions(userId: string): Promise<StudySession[]> {
     return snapshot.docs.map((item) => item.data() as StudySession);
   }
 
-  const raw = await AsyncStorage.getItem(storageKeys.sessions(userId));
-  if (!raw) {
-    const starter = seedStudySessions.map((session) => ({ ...session, userId }));
-    await saveSessions(userId, starter);
-    return starter;
+  const sqliteInitialised = await loadJsonValue<boolean>(storageKeys.sessionsInitialized(userId));
+  const sqliteSessions = await loadSessionRows<StudySession>(userId);
+  if (sqliteInitialised && sqliteSessions) {
+    return sqliteSessions;
   }
-  return JSON.parse(raw) as StudySession[];
+
+  const raw = await AsyncStorage.getItem(storageKeys.sessions(userId));
+  if (raw) {
+    const existing = JSON.parse(raw) as StudySession[];
+    await replaceSessionRows(userId, existing);
+    await saveJsonValue(storageKeys.sessionsInitialized(userId), true);
+    return existing;
+  }
+
+  const starter = seedStudySessions.map((session) => ({ ...session, userId }));
+  await saveSessions(userId, starter);
+  return starter;
 }
 
 export async function saveSessions(userId: string, sessions: StudySession[]): Promise<void> {
@@ -28,5 +39,12 @@ export async function saveSessions(userId: string, sessions: StudySession[]): Pr
     await Promise.all(sessions.map((session) => setDoc(doc(db, 'studySessions', session.id), session)));
     return;
   }
-  await AsyncStorage.setItem(storageKeys.sessions(userId), JSON.stringify(sessions));
+
+  const savedToSqlite = await replaceSessionRows(userId, sessions.map((session) => ({ ...session, userId })));
+  await saveJsonValue(storageKeys.sessionsInitialized(userId), true);
+  if (!savedToSqlite) {
+    await AsyncStorage.setItem(storageKeys.sessions(userId), JSON.stringify(sessions));
+  } else {
+    await AsyncStorage.setItem(storageKeys.sessions(userId), JSON.stringify(sessions));
+  }
 }

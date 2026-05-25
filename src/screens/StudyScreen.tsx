@@ -14,7 +14,7 @@ import { createId } from '../utils/id';
 type Props = BottomTabScreenProps<MainTabParamList, 'Study'>;
 
 export function StudyScreen(_props: Props) {
-  const { user, tasks, addSession } = useApp();
+  const {theme, user, tasks, addSession } = useApp();
   const activeTasks = tasks.filter((task) => task.status !== 'completed');
   const [taskId, setTaskId] = useState(activeTasks[0]?.id);
   const timer = useStudyTimer(25 * 60);
@@ -49,7 +49,7 @@ export function StudyScreen(_props: Props) {
       <Card style={{ alignItems: 'center', marginBottom: 18 }}>
         <AppText variant="caption" muted>Current task</AppText>
         <AppText variant="subtitle" style={{ textAlign: 'center' }}>{selectedTask?.title ?? 'General study'}</AppText>
-        <View style={{ width: 220, height: 220, borderRadius: 44, alignItems: 'center', justifyContent: 'center', marginVertical: 24, borderWidth: 1, borderColor: '#D7E3EF' }}>
+        <View style={{ width: 220, height: 220, borderRadius: 44, alignItems: 'center', justifyContent: 'center', marginVertical: 24, borderWidth: 1, borderColor: theme.border }}>
           <AppText variant="hero" style={{ fontSize: 54, lineHeight: 62 }}>{timer.formatted}</AppText>
           <AppText muted>Session 1 / 4 · Break 5:00</AppText>
         </View>

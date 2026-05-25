@@ -4,6 +4,7 @@ import { seedTasks } from '../data/seed';
 import type { Task } from '../types/models';
 import { getFirebaseServices } from '../services/firebase';
 import { storageKeys } from './keys';
+import { deleteTaskRow, loadJsonValue, loadTaskRows, replaceTaskRows, saveJsonValue } from './sqliteDatabase';
 
 export async function loadTasks(userId: string): Promise<Task[]> {
   const { db, isConfigured } = getFirebaseServices();
@@ -13,13 +14,23 @@ export async function loadTasks(userId: string): Promise<Task[]> {
     return snapshot.docs.map((item) => item.data() as Task);
   }
 
-  const raw = await AsyncStorage.getItem(storageKeys.tasks(userId));
-  if (!raw) {
-    const starter = seedTasks.map((task) => ({ ...task, userId }));
-    await saveTasks(userId, starter);
-    return starter;
+  const sqliteInitialised = await loadJsonValue<boolean>(storageKeys.tasksInitialized(userId));
+  const sqliteTasks = await loadTaskRows<Task>(userId);
+  if (sqliteInitialised && sqliteTasks) {
+    return sqliteTasks;
   }
-  return JSON.parse(raw) as Task[];
+
+  const raw = await AsyncStorage.getItem(storageKeys.tasks(userId));
+  if (raw) {
+    const existing = JSON.parse(raw) as Task[];
+    await replaceTaskRows(userId, existing);
+    await saveJsonValue(storageKeys.tasksInitialized(userId), true);
+    return existing;
+  }
+
+  const starter = seedTasks.map((task) => ({ ...task, userId }));
+  await saveTasks(userId, starter);
+  return starter;
 }
 
 export async function saveTasks(userId: string, tasks: Task[]): Promise<void> {
@@ -28,7 +39,14 @@ export async function saveTasks(userId: string, tasks: Task[]): Promise<void> {
     await Promise.all(tasks.map((task) => setDoc(doc(db, 'tasks', task.id), task)));
     return;
   }
-  await AsyncStorage.setItem(storageKeys.tasks(userId), JSON.stringify(tasks));
+
+  const savedToSqlite = await replaceTaskRows(userId, tasks.map((task) => ({ ...task, userId })));
+  await saveJsonValue(storageKeys.tasksInitialized(userId), true);
+  if (!savedToSqlite) {
+    await AsyncStorage.setItem(storageKeys.tasks(userId), JSON.stringify(tasks));
+  } else {
+    await AsyncStorage.setItem(storageKeys.tasks(userId), JSON.stringify(tasks));
+  }
 }
 
 export async function removeTask(userId: string, taskId: string): Promise<void> {
@@ -37,6 +55,13 @@ export async function removeTask(userId: string, taskId: string): Promise<void> 
     await deleteDoc(doc(db, 'tasks', taskId));
     return;
   }
+
+  const removedFromSqlite = await deleteTaskRow(taskId);
   const existing = await loadTasks(userId);
-  await saveTasks(userId, existing.filter((task) => task.id !== taskId));
+  const next = existing.filter((task) => task.id !== taskId);
+  if (!removedFromSqlite) {
+    await saveTasks(userId, next);
+  } else {
+    await AsyncStorage.setItem(storageKeys.tasks(userId), JSON.stringify(next));
+  }
 }

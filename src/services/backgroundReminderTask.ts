@@ -1,7 +1,11 @@
 import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
 import * as TaskManager from 'expo-task-manager';
+import { loadBackgroundReminderTasks, markBackgroundReminderNotified } from '../storage/backgroundReminderStorage';
+import { isInsideReminderRadius } from './locationService';
 
 export const BACKGROUND_LOCATION_TASK = 'campusmate-background-location-reminder';
+const notificationCooldownMs = 4 * 60 * 60 * 1000;
 
 type LocationTaskData = {
   locations: Location.LocationObject[];
@@ -16,14 +20,36 @@ TaskManager.defineTask<LocationTaskData>(
     }
 
     const latest = data?.locations?.[0];
-
-    if (latest) {
-      console.log(
-        'Background location update',
-        latest.coords.latitude,
-        latest.coords.longitude
-      );
+    if (!latest) {
+      return;
     }
+
+    const current = {
+      latitude: latest.coords.latitude,
+      longitude: latest.coords.longitude
+    };
+
+    const reminders = await loadBackgroundReminderTasks();
+    await Promise.all(reminders.map(async (reminder) => {
+      if (!isInsideReminderRadius(current, reminder.locationReminder)) {
+        return;
+      }
+
+      const lastNotifiedAt = reminder.lastNotifiedAt ? new Date(reminder.lastNotifiedAt).getTime() : 0;
+      if (Date.now() - lastNotifiedAt < notificationCooldownMs) {
+        return;
+      }
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: `Near ${reminder.locationReminder.placeName}`,
+          body: `${reminder.title} is linked to this campus location.`,
+          data: { taskId: reminder.taskId, type: 'location-reminder' }
+        },
+        trigger: null
+      });
+      await markBackgroundReminderNotified(reminder.taskId);
+    }));
   }
 );
 
@@ -37,6 +63,11 @@ export async function startBackgroundReminderTask(): Promise<boolean> {
   const background = await Location.requestBackgroundPermissionsAsync();
 
   if (!background.granted) {
+    return false;
+  }
+
+  const notificationPermission = await Notifications.requestPermissionsAsync();
+  if (!notificationPermission.granted) {
     return false;
   }
 

@@ -2,12 +2,14 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import type { ReminderLocation, StudySession, Task, TextScale, ThemeMode, UserPreferences, UserProfile } from '../types/models';
 import { createTheme, type AppTheme } from '../theme/theme';
 import { createGuestProfile, signInWithEmail, signOutUser, signUpWithEmail } from '../services/authService';
-import { scheduleTaskReminder } from '../services/notificationService';
+import { requestNotificationPermission, scheduleTaskReminder } from '../services/notificationService';
+import { initializeAdMob, maybeShowInterstitialAd } from '../services/adMobService';
 import { startBackgroundReminderTask, stopBackgroundReminderTask } from '../services/backgroundReminderTask';
 import { loadPreferences, savePreferences, defaultPreferences } from '../storage/preferencesStorage';
 import { clearStoredUser, loadStoredUser, saveStoredUser } from '../storage/userStorage';
 import { loadTasks, removeTask, saveTasks } from '../storage/taskRepository';
 import { loadSessions, saveSessions } from '../storage/sessionRepository';
+import { saveBackgroundReminderTasks, toBackgroundReminderTasks } from '../storage/backgroundReminderStorage';
 
 interface AppContextValue {
   theme: AppTheme;
@@ -54,11 +56,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     await savePreferences(next);
   }, []);
 
+  const syncBackgroundReminders = useCallback(async (nextTasks: Task[]) => {
+    await saveBackgroundReminderTasks(toBackgroundReminderTasks(nextTasks));
+  }, []);
+
   const hydrateForUser = useCallback(async (profile: UserProfile) => {
     const [loadedTasks, loadedSessions] = await Promise.all([loadTasks(profile.id), loadSessions(profile.id)]);
     setTasks(loadedTasks);
     setSessions(loadedSessions);
-  }, []);
+    await syncBackgroundReminders(loadedTasks);
+  }, [syncBackgroundReminders]);
 
   const reload = useCallback(async () => {
     if (!user) return;
@@ -79,6 +86,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         const [storedPreferences, storedUser] = await Promise.all([loadPreferences(), loadStoredUser()]);
         setPreferences(storedPreferences);
+        void initializeAdMob();
+        if (storedPreferences.backgroundLocationEnabled) {
+          void startBackgroundReminderTask();
+        }
         if (storedUser) {
           setUser(storedUser);
           await hydrateForUser(storedUser);
@@ -96,7 +107,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (!user) return;
     setTasks(nextTasks);
     await saveTasks(user.id, nextTasks);
-  }, [user]);
+    await syncBackgroundReminders(nextTasks);
+  }, [syncBackgroundReminders, user]);
 
   const persistSessions = useCallback(async (nextSessions: StudySession[]) => {
     if (!user) return;
@@ -146,10 +158,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(async () => {
     await signOutUser();
     await clearStoredUser();
+    await syncBackgroundReminders([]);
     setUser(null);
     setTasks([]);
     setSessions([]);
-  }, []);
+  }, [syncBackgroundReminders]);
 
   const addTask = useCallback(async (task: Task) => {
     const next = [...tasks, task];
@@ -169,9 +182,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTask = useCallback(async (taskId: string) => {
     if (!user) return;
-    setTasks((current) => current.filter((task) => task.id !== taskId));
+    const next = tasks.filter((task) => task.id !== taskId);
+    setTasks(next);
     await removeTask(user.id, taskId);
-  }, [user]);
+    await syncBackgroundReminders(next);
+  }, [syncBackgroundReminders, tasks, user]);
 
   const toggleTask = useCallback(async (taskId: string) => {
     const now = new Date().toISOString();
@@ -196,12 +211,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const addSession = useCallback(async (session: StudySession) => {
     await persistSessions([...sessions, session]);
+    void maybeShowInterstitialAd('study-session-saved');
   }, [persistSessions, sessions]);
 
   const setThemeMode = useCallback((mode: ThemeMode) => persistPreferences({ ...preferences, themeMode: mode }), [persistPreferences, preferences]);
   const setTextScale = useCallback((scale: TextScale) => persistPreferences({ ...preferences, textScale: scale }), [persistPreferences, preferences]);
   const setAccessibilityMode = useCallback((enabled: boolean) => persistPreferences({ ...preferences, accessibilityMode: enabled }), [persistPreferences, preferences]);
-  const setNotificationsEnabled = useCallback((enabled: boolean) => persistPreferences({ ...preferences, notificationsEnabled: enabled }), [persistPreferences, preferences]);
+  const setNotificationsEnabled = useCallback(async (enabled: boolean) => {
+    if (enabled) {
+      const granted = await requestNotificationPermission();
+      if (!granted) {
+        setError('Notification permission was not granted.');
+        return;
+      }
+    }
+    await persistPreferences({ ...preferences, notificationsEnabled: enabled });
+  }, [persistPreferences, preferences]);
   const setBackgroundLocationEnabled = useCallback(async (enabled: boolean) => {
     const ok = enabled ? await startBackgroundReminderTask() : true;
     if (!ok) {
